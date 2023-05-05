@@ -96,14 +96,24 @@ public class UserController {
         }
     }
 
-    @GetMapping ("/payment")
-    public ResponseEntity<Object> getPaymentData(@RequestBody List<CartCommodityRequest> cartCommodity) {
+    @PutMapping ("/buylist")
+    public ResponseEntity<Object> getPaymentData(@RequestParam(value = "commodityId") int commodityId,
+                                                @RequestParam(value = "quantity") int quantity) {
         try {
             User user = BalootSystem.getInstance().getLoggedInUser();
             BalootSystem baloot = BalootSystem.getInstance();
-            for (CartCommodityRequest cc : cartCommodity) {
-                user.getBuyList().getCommodities().get(cc.getCommodityId()).setQuantity(cc.getQuantity());
-            }
+            user.getBuyList().getCommodities().get(commodityId).setQuantity(quantity);
+            return ResponseEntity.status(HttpStatus.OK).body("quantity set successfully");
+        } catch (InValidInputException ex) {
+            System.out.println(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        }
+    }
+    @GetMapping ("/payment")
+    public ResponseEntity<Object> getPaymentData() {
+        try {
+            User user = BalootSystem.getInstance().getLoggedInUser();
+            BalootSystem baloot = BalootSystem.getInstance();
             Map<String, Integer> prices = baloot.getLoggedInUser().getBuyList().getTotalCost();
             return ResponseEntity.status(HttpStatus.OK).body(prices.get("originalPrice"));
         } catch (InValidInputException ex) {

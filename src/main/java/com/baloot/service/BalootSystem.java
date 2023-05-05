@@ -16,7 +16,7 @@ public class BalootSystem {
     private DataBase db = new DataBase();
     private static BalootSystem instance;
     private BalootSystem() {}
-    public static BalootSystem getInstance() {
+    public static BalootSystem getInstance(){
         if(instance == null) {
             instance = new BalootSystem();
             instance.readDataFromServer();

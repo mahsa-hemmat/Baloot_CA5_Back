@@ -79,10 +79,12 @@ public class DataBase {
         int update=users.get(loggedInUser.getUsername()).getRating(score,commodityId);
         Commodity commodity = commodities.getCommodityById(commodityId);
         commodity.updateRating(update,newRating);
-        if(loggedInUser.getBuyList().getCommodities().containsKey(commodityId))
+        if(loggedInUser.getBuyList().getCommodities().containsKey(commodityId)) {
             loggedInUser.getBuyList().getCommodities().get(commodityId).setRating(commodity.getRating());
-        if(loggedInUser.getPurchasedList().containsKey(commodityId))
+        }
+        if(loggedInUser.getPurchasedList().containsKey(commodityId)) {
             loggedInUser.getPurchasedList().get(commodityId).setRating(commodity.getRating());
+        }
 
         providers.get(commodity.getProviderId()).calRating();
     }
@@ -190,6 +192,6 @@ public class DataBase {
         scores.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .forEachOrdered(x -> sortedScores.put(x.getKey(), x.getValue()));
-        return new ArrayList<>(sortedScores.keySet()).subList(0, Math.min(sortedScores.size(), 5));
+        return new ArrayList<>(sortedScores.keySet()).subList(0, Math.min(sortedScores.size(), 4));
     }
 }

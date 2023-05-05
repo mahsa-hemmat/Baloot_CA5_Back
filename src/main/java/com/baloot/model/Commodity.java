@@ -80,4 +80,8 @@ public class Commodity {
     public void setTotalRating(double totalRating) {
         this.totalRating = totalRating;
     }
+
+    public int getRatingCount() {
+        return ratingCount;
+    }
 }

@@ -1,6 +1,7 @@
 package com.baloot.controller;
 
 import com.baloot.exception.CommodityNotFoundException;
+import com.baloot.exception.ProviderNotFoundException;
 import com.baloot.exception.ScoreOutOfBoundsException;
 import com.baloot.exception.UserNotFoundException;
 import com.baloot.info.AbstractCommodityInfo;
@@ -66,9 +67,12 @@ public class CommodityHandler {
         if (!BalootSystem.getInstance().hasAnyUserLoggedIn())
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not logged in. Please login first");
         try {
-            CommodityInfo commodityInfo = new CommodityInfo(BalootSystem.getInstance().getDataBase().getCommodityById(commodity_id));
+            Commodity co = BalootSystem.getInstance().getDataBase().getCommodityById(commodity_id);
+            CommodityInfo commodityInfo = new CommodityInfo(co);
+            commodityInfo.setProviderName(BalootSystem.getInstance().getProvider(co.getProviderId()).getName());
+            commodityInfo.setRatingsCount(co.getRatingCount());
             return ResponseEntity.status(HttpStatus.OK).body(commodityInfo);
-        } catch (CommodityNotFoundException ex) {
+        } catch (CommodityNotFoundException|ProviderNotFoundException ex) {
             System.out.println(ex.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }

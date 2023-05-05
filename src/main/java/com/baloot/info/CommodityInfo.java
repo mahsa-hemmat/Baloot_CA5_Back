@@ -8,17 +8,19 @@ public class CommodityInfo {
     private final int id;
     private final String name;
     private final int providerId;
+    private String providerName;
     private final int price;
     private final List<String> categories;
     private final double rating;
     private final int inStock;
     private final String image;
+    private int ratingsCount;
 
     public CommodityInfo(Commodity commodity){
         id = commodity.getId();
         name = commodity.getName();
-        providerId = commodity.getProviderId();
         price = commodity.getPrice();
+        providerId = commodity.getProviderId();
         categories = commodity.getCategories();
         rating = commodity.getRating();
         inStock = commodity.getInStock();
@@ -33,8 +35,8 @@ public class CommodityInfo {
         return name;
     }
 
-    public int getProviderId() {
-        return providerId;
+    public String getProviderName() {
+        return providerName;
     }
 
     public int getPrice() {
@@ -55,5 +57,21 @@ public class CommodityInfo {
 
     public String getImage() {
         return image;
+    }
+
+    public int getRatingsCount() {
+        return ratingsCount;
+    }
+
+    public int getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
+    }
+
+    public void setRatingsCount(int ratingsCount) {
+        this.ratingsCount = ratingsCount;
     }
 }
