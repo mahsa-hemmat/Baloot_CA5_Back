@@ -64,7 +64,7 @@ public class BalootSystem {
     }
 
     private void importProviders() throws Exception{
-        String strJsonData = HTTPRequestHandler("http://5.253.25.110:5000/api/providers");
+        String strJsonData = HTTPRequestHandler("http://5.253.25.110:5000/api/v2/providers");
         ObjectMapper mapper = new ObjectMapper();
         List<Provider> providers = mapper.readValue(strJsonData, new TypeReference<List<Provider>>(){});
         db.addProvider(providers);
@@ -74,8 +74,6 @@ public class BalootSystem {
         String strJsonData = HTTPRequestHandler("http://5.253.25.110:5000/api/users");
         ObjectMapper mapper = new ObjectMapper();
         List<User> users = mapper.readValue(strJsonData, new TypeReference<List<User>>(){});
-        for(User user: users)
-            System.out.println(user.getUsername());
         db.addUser(users);
     }
 

@@ -79,6 +79,11 @@ public class DataBase {
         int update=users.get(loggedInUser.getUsername()).getRating(score,commodityId);
         Commodity commodity = commodities.getCommodityById(commodityId);
         commodity.updateRating(update,newRating);
+        if(loggedInUser.getBuyList().getCommodities().containsKey(commodityId))
+            loggedInUser.getBuyList().getCommodities().get(commodityId).setRating(commodity.getRating());
+        if(loggedInUser.getPurchasedList().containsKey(commodityId))
+            loggedInUser.getPurchasedList().get(commodityId).setRating(commodity.getRating());
+
         providers.get(commodity.getProviderId()).calRating();
     }
 
@@ -92,15 +97,14 @@ public class DataBase {
         return commodities.getCommodityById(id);
 
     }
-    public void voteComment(String id, int vote) throws Exception {
+    public void voteComment(String id, int vote) throws CommentNotFoundException {
         commodities.voteComment(id,vote);
     }
 
     public void addComment(List<Comment> comments) throws Exception {
-        for(int i = 0; i<comments.size() ; i++){
-            Comment comment = comments.get(i);
+        for (Comment comment : comments) {
             int commodityId = comment.getCommodityId();
-            if(!commodities.hasCommodity(commodityId))
+            if (!commodities.hasCommodity(commodityId))
                 throw new CommodityNotFoundException(commodityId);
             commodities.getCommodityById(commodityId).addComment(comment);
         }
@@ -109,9 +113,9 @@ public class DataBase {
     public void addComment(String text, int commodityId) throws CommodityNotFoundException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String date= formatter.format(new Date());
-        Comment comment = new Comment(loggedInUser.getEmail(), commodityId, text, date);
         if(!commodities.hasCommodity(commodityId))
             throw new CommodityNotFoundException(commodityId);
+        Comment comment = new Comment(loggedInUser.getUsername(), commodityId, text, date);
         commodities.getCommodityById(commodityId).addComment(comment);
     }
 
@@ -153,8 +157,12 @@ public class DataBase {
         return loggedInUser != null;
     }
 
-    public void purchase() throws Exception {
+    public void purchase() throws OutOfStockException, BuyListIsEmptyException, NotEnoughCreditException, CommodityNotFoundException {
         loggedInUser.completePurchase();
+        for(CartCommodity commodity:loggedInUser.getBuyList().getCommodities().values()) {
+            commodity.updateInStock();
+            getCommodityById(commodity.getId()).updateInStock();
+        }
     }
 
     public void addDiscount(List<Discount> discounts) {

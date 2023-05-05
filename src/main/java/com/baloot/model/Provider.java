@@ -7,6 +7,7 @@ public class Provider {
     private int id;
     private String name;
     private String registryDate;
+    private String image;
     private List<Commodity> commodities = new ArrayList<>();
     private double rating = 0;
     public Provider(){}
@@ -43,6 +44,8 @@ public class Provider {
     public void setRegistryDate(String registryDate) {
         this.registryDate = registryDate;
     }
+
+    public String getImage() { return image; }
 
     public void addNewCommodity(Commodity newCommodity){
         commodities.add(newCommodity);

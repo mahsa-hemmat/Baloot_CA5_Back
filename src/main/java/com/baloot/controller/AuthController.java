@@ -1,7 +1,7 @@
 package com.baloot.controller;
 
-import com.baloot.model.LoginInfo;
-import com.baloot.model.RegisterInfo;
+import com.baloot.info.LoginInfo;
+import com.baloot.info.RegisterInfo;
 import com.baloot.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +18,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginInfo loginData) throws IOException {
-        System.out.println("in login");
         try {
             AuthService.authenticateUser(loginData);
-            return ResponseEntity.ok("ok");
+            return ResponseEntity.status(HttpStatus.OK).body("logged in successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Logging in failed."+e.getMessage());
         }
@@ -31,19 +30,18 @@ public class AuthController {
     public ResponseEntity<Object> logout() {
         try {
             AuthService.logoutUser();
-            return ResponseEntity.ok("ok");
+            return ResponseEntity.status(HttpStatus.OK).body("logged out successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Object> register(@RequestBody RegisterInfo registerData) throws IOException {
-        System.out.println("in signup");
+    public ResponseEntity<Object> register(@RequestBody RegisterInfo registerData) {
         try {
             AuthService.registerUser(registerData);
             System.out.println("signed up successfully");
-            return ResponseEntity.status(HttpStatus.OK).body("OK - Registered successfully");
+            return ResponseEntity.status(HttpStatus.OK).body("Registered successfully");
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Register Failed." + e.getMessage());

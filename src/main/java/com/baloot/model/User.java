@@ -13,7 +13,7 @@ public class User {
     private int credit;
     private BuyList buyList = new BuyList();
     private Map<String, Discount> discounts = new HashMap<>();
-    private Map<Integer, Commodity> purchasedList = new HashMap<>();
+    private Map<Integer, CartCommodity> purchasedList = new HashMap<>();
     private Map<Integer, Integer> ratings = new HashMap<>();
     private String lastDiscountUsed = null;
 
@@ -69,21 +69,24 @@ public class User {
         credit+=amount;
     }
 
-    public Map<Integer, Commodity> getPurchasedList(){ return purchasedList; }
+    public Map<Integer, CartCommodity> getPurchasedList(){ return purchasedList; }
 
-    public void completePurchase() throws Exception{
-        if(credit < buyList.getTotalCost())
+    public void completePurchase() throws NotEnoughCreditException, BuyListIsEmptyException, OutOfStockException {
+        int price = 0;
+        if (buyList.getDiscount() == 0)
+            price = buyList.getTotalCost().get("originalPrice");
+        else
+            price = buyList.getTotalCost().get("discountedPrice");
+        if(credit < price)
             throw new NotEnoughCreditException();
         if(buyList.getCommodities().isEmpty())
             throw new BuyListIsEmptyException();
-        for(Commodity commodity:buyList.getCommodities().values()) {
+        for(CartCommodity commodity:buyList.getCommodities().values()) {
             if (commodity.getInStock() == 0)
                 throw new OutOfStockException(commodity.getId());
         }
-        credit -= buyList.getTotalCost();
+        credit -= price;
         purchasedList.putAll(buyList.getCommodities());
-        for(Commodity commodity:buyList.getCommodities().values())
-            commodity.updateInStock();
         buyList = new BuyList();
         if(lastDiscountUsed != null)
             discounts.get(lastDiscountUsed).setAlreadyUsed(true);
@@ -94,8 +97,10 @@ public class User {
     }
     public Boolean isDiscountValid(String discountCode){return discounts.containsKey(discountCode);}
 
-    public void submitDiscount(String discountCode) throws Exception {
-        if(!isDiscountValid(discountCode))
+    public void submitDiscount(String discountCode) throws InvalidDiscountException, DiscountHasExpiredException {
+        if (discountCode == null || discountCode.isEmpty() || discountCode.isBlank())
+            buyList.setDiscount(0);
+        else if(!isDiscountValid(discountCode))
             throw new InvalidDiscountException(discountCode);
         else if(isDiscountValid(discountCode) && !hasDiscountExpired(discountCode)) {
             lastDiscountUsed = discountCode;

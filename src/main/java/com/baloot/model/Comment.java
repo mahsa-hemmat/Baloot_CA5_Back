@@ -3,7 +3,7 @@ package com.baloot.model;
 import java.util.UUID;
 
 public class Comment {
-    private UUID id = UUID.randomUUID();
+    private final UUID id = UUID.randomUUID();
     private String userEmail;
     private int commodityId;
     private String text;
@@ -27,7 +27,7 @@ public class Comment {
     public void addLikeDislike(int vote){
         if(vote == 1)
             like += 1;
-        else
+        else if (vote == -1)
             dislike += 1;
     }
 

@@ -18,6 +18,7 @@ public class CommodityList {
             {
                 put ("name", new ArrayList<>());
                 put ("category", new ArrayList<>());
+                put ("provider", new ArrayList<>());
             }
         };
     }
@@ -53,24 +54,50 @@ public class CommodityList {
         }
     }
 
-    public List<Commodity> getList() throws Exception{
+    /*public List<Commodity> getList(){
         List<Commodity> filteredCommodities = new ArrayList<>();
-        if(filters.get("name").isEmpty() && !filters.get("category").isEmpty())
+        if(filters.get("name").isEmpty() && !filters.get("category").isEmpty() && filters.get("provider").isEmpty())
             filteredCommodities.addAll(filterByCategory(filters.get("category")));
-        else if(!filters.get("name").isEmpty() && filters.get("category").isEmpty())
+        else if(!filters.get("name").isEmpty() && filters.get("category").isEmpty() && filters.get("provider").isEmpty())
             filteredCommodities.addAll(filterByName(filters.get("name")));
-        else if(filters.get("name").isEmpty() && filters.get("category").isEmpty())
+        else if(filters.get("name").isEmpty() && filters.get("category").isEmpty() && !filters.get("provider").isEmpty())
+            filteredCommodities.addAll(filterByName(filters.get("provider")));
+        else if(filters.get("name").isEmpty() && filters.get("category").isEmpty() && !filters.get("provider").isEmpty())
             filteredCommodities.addAll(commodities.values());
-        else {
+        else if(!filters.get("name").isEmpty() && !filters.get("category").isEmpty() && filters.get("provider").isEmpty()) {
             filteredCommodities.addAll(filterByName(filters.get("name")));
             filteredCommodities.retainAll(filterByCategory(filters.get("category")));
         }
+        else if(!filters.get("name").isEmpty() && filters.get("category").isEmpty() && !filters.get("provider").isEmpty()) {
+            filteredCommodities.addAll(filterByName(filters.get("name")));
+            filteredCommodities.retainAll(filterByCategory(filters.get("provider")));
+        }
+        else if(filters.get("name").isEmpty() && !filters.get("category").isEmpty() && !filters.get("provider").isEmpty()) {
+            filteredCommodities.addAll(filterByCategory(filters.get("category")));
+            filteredCommodities.retainAll(filterByCategory(filters.get("provider")));
+        }
+        else {
+            filteredCommodities.addAll(filterByName(filters.get("name")));
+            filteredCommodities.retainAll(filterByCategory(filters.get("category")));
+            filteredCommodities.retainAll(filterByProviderName(filters.get("provider")));
+        }
         return filteredCommodities;
-    }
+    }*/
 
-    private List<Commodity> filterByName(List<String> names) {
+    public List<Commodity> filterByName(String name) {
+        List<String> names = new ArrayList<>();
+        name = name.toLowerCase().trim().replaceAll("\\s+", " ");
+        if (name.contains(","))
+            names = Arrays.asList(name.trim().split("\\s*,\\s*"));
         List<Commodity> allCommodities = new ArrayList<>(commodities.values());
         List<Commodity> nameFiltered = new ArrayList<>();
+        if (names.isEmpty()) {
+            String finalName = name;
+            nameFiltered.addAll(allCommodities.stream()
+                    .filter(c -> c.getName().toLowerCase().contains(finalName))
+                    .toList());
+            return nameFiltered;
+        }
         for(int i = 0; i < names.size(); i++) {
             String substring = names.get(i);
             if (i == 0) {
@@ -86,22 +113,57 @@ public class CommodityList {
         return nameFiltered;
     }
 
-    public List<Commodity> filterByCategory(List<String> cat) throws Exception{
-        List<Commodity> list= new ArrayList<Commodity>();
+    public List<Commodity> filterByCategory(String category){
+        List<String> cat = new ArrayList<>();
+        category = category.toLowerCase().trim().replaceAll("\\s+", " ");
+        if (category.contains(","))
+            cat = Arrays.asList(category.trim().split("\\s*,\\s*"));
+        else
+            cat.add(category);
+        List<Commodity> list= new ArrayList<>();
         for(Commodity co : commodities.values()) {
             List<String> tempList = new ArrayList<>(co.getCategories());
             tempList.replaceAll(String::toLowerCase);
-            if (tempList.containsAll(cat))
+            if (new HashSet<>(tempList).containsAll(cat))
                 list.add(co);
         }
         return list;
+    }
+
+    public List<Commodity> filterByProviderName(String name) {
+        List<String> names = new ArrayList<>();
+        name = name.toLowerCase().trim().replaceAll("\\s+", " ");
+        if (name.contains(","))
+            names = Arrays.asList(name.trim().split("\\s*,\\s*"));
+        List<Commodity> allCommodities = new ArrayList<>(commodities.values());
+        List<Commodity> nameFiltered = new ArrayList<>();
+        if (names.isEmpty()) {
+            String finalName = name;
+            nameFiltered.addAll(allCommodities.stream()
+                    .filter(c -> c.getName().toLowerCase().contains(finalName))
+                    .toList());
+            return nameFiltered;
+        }
+        for(int i = 0; i < names.size(); i++) {
+            String substring = names.get(i);
+            if (i == 0) {
+                nameFiltered.addAll(allCommodities.stream()
+                        .filter(c -> c.getName().toLowerCase().contains(substring))
+                        .collect(Collectors.toList()));
+            } else {
+                nameFiltered = (nameFiltered.stream()
+                        .filter(c -> c.getName().toLowerCase().contains(substring))
+                        .collect(Collectors.toList()));
+            }
+        }
+        return nameFiltered;
     }
 
     public boolean hasCommodity(int id){
         return (commodities.containsKey(id));
     }
 
-    public void voteComment(String id, int vote) throws Exception {
+    public void voteComment(String id, int vote) throws CommentNotFoundException {
         for(Commodity commodity: commodities.values()){
             if(commodity.getComments().containsKey(UUID.fromString(id))){
                 commodity.getComments().get(UUID.fromString(id)).addLikeDislike(vote);
@@ -128,20 +190,23 @@ public class CommodityList {
         commodities = sorted;
     }
 
-    public void sortByPrice() {
+    public List<Commodity> sortByPrice() {
         List<Commodity> allCommodities = new ArrayList<>(commodities.values());
         allCommodities.sort(Collections.reverseOrder(Comparator.comparing(Commodity::getPrice)));
-        Map<Integer, Commodity> sorted = new LinkedHashMap<>();
-        for(Commodity co:allCommodities)
-            sorted.put(co.getId(), co);
-        commodities = sorted;
+        return allCommodities;
     }
-    public void sortByName() {
+    public List<Commodity> sortByPrice(List<Commodity> allCommodities) {
+        allCommodities.sort(Collections.reverseOrder(Comparator.comparing(Commodity::getPrice)));
+        return allCommodities;
+    }
+    public List<Commodity> sortByName() {
         List<Commodity> allCommodities = new ArrayList<>(commodities.values());
-        allCommodities.sort(Comparator.comparing(Commodity::getName));
-        Map<Integer, Commodity> sorted = new LinkedHashMap<>();
-        for(Commodity co:allCommodities)
-            sorted.put(co.getId(), co);
-        commodities = sorted;
+        allCommodities.sort(Comparator.comparing(Commodity::getName).reversed());
+        return allCommodities;
     }
+    public List<Commodity> sortByName(List<Commodity> allCommodities) {
+        allCommodities.sort(Comparator.comparing(Commodity::getName).reversed());
+        return allCommodities;
+    }
+
 }
